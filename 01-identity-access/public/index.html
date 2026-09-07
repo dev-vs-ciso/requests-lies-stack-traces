@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="mk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Клиника Аурора — Пациентски портал</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>🏥 Клиника „Аурора“</h1>
+      <span class="sub">Пациентски портал</span>
+      <button id="logout" hidden>Одјава</button>
+    </header>
+
+    <main>
+      <!-- Login -->
+      <section id="login-view" class="card">
+        <h2>Најава</h2>
+        <form id="login-form">
+          <label>Корисничко име <input name="username" autocomplete="username" value="bojan" /></label>
+          <label>Лозинка <input name="password" type="password" autocomplete="current-password" value="bojan12345" /></label>
+          <button type="submit">Најави се</button>
+          <p id="login-error" class="error" hidden></p>
+        </form>
+        <p class="hint">Демо најава: <code>bojan / bojan12345</code></p>
+      </section>
+
+      <!-- Dashboard -->
+      <section id="dash-view" hidden>
+        <div class="card">
+          <h2>Добредојде, <span id="me-name"></span></h2>
+          <p class="muted">
+            Овој портал ти ги прикажува <strong>само твоите</strong> податоци.
+            (This portal only ever shows your own records — there is no field to
+            type someone else's id. That's the point of module 1.)
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>Мои белешки од прегледи</h3>
+          <div id="notes"></div>
+        </div>
+
+        <div class="card">
+          <h3>Мои термини</h3>
+          <div id="appointments"></div>
+        </div>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

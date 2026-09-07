@@ -1,0 +1,16 @@
+services:
+  portal:
+    build: .
+    image: rlst-m1-portal
+    container_name: rlst-m1-portal
+    ports:
+      - "3001:3000"
+    environment:
+      DATABASE_URL: "file:/app/data/app.db"
+      PORT: "3000"
+    # Live-edit the source for the fix-it lab; tsx reloads on change.
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+    command: ["npx", "tsx", "watch", "src/server.ts"]
+    restart: unless-stopped

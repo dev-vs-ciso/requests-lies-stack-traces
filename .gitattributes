@@ -1,0 +1,10 @@
+# Shell scripts and the Docker entrypoint MUST stay LF, or they break inside the
+# Linux container (bad interpreter / ^M errors) after a clone on Windows.
+*.sh text eol=lf
+docker-entrypoint.sh text eol=lf
+
+# Keep these LF too for cross-platform consistency.
+*.mjs text eol=lf
+*.ts text eol=lf
+*.json text eol=lf
+Dockerfile text eol=lf

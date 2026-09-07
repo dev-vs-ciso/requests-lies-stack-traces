@@ -30,6 +30,24 @@ strawman bad-developer code. A competent engineer should look at each bug and th
 *"I'd defend that in a different codebase"* — and that discomfort is the lesson. If
 a vuln only looks dumb, we've written it wrong.
 
+### Second principle: the UI is a decoy
+
+**No vulnerability is reproducible from the frontend. All of them are trivial from
+Postman.** Every app ships a small but *legit* frontend that does everything right:
+
+- it reads your own id from a `/profile` (or `/me`) call and only ever requests
+  *your own* resources — so there's no way to ask for Ana's record by clicking;
+- it authenticates with the session cookie, never the `?session=` query param;
+- it validates inputs client-side, so the malformed requests that trigger verbose
+  errors never leave the browser;
+- it paginates politely over your own small dataset, never the whole collection.
+
+So a QA click-through finds nothing. The bug lives **at the API boundary**, where
+curl and Postman don't obey the frontend's manners. This is the point we're
+teaching: **the API is the attack surface, not the UI** — and it's also why the
+happy-path tests and the manual UI test in Module 5 both lie to you. The checker
+always attacks the **API directly**, Postman-style, never through the UI.
+
 ---
 
 ## 2. The shape of the workshop
@@ -65,6 +83,7 @@ Participants learn the stack **once**.
 | Auth         | Session cookies           | Realistic; the query-string-token sin (Module 1) rides on top of it. |
 | Runtime      | Docker (one compose/app)  | Isolation — a broken app 3 can't take down app 1. |
 | Setup UX     | Node-based menu (`setup`) | One file, runs on Win/Mac/Linux, no bash-vs-PowerShell parity bugs. |
+| Frontend     | Minimal legit UI per app  | The decoy (see §1). Does everything right, so the bug is invisible from the browser and only reachable via the API. Keep it tiny — server-rendered or a single static page + fetch. |
 
 ---
 
@@ -139,9 +158,13 @@ it → fix it → 2-min debrief tying it to the AI-code thread.*
   links and kiosk/QR check-in work. Both are fine — until this multi-tenant clinic.
 - **The agent tell:** it wrote the auth middleware (you must be logged in ✓) and
   forgot the ownership check (…as *this* patient ✗).
-- **Lab:** log in as Bojan, then `GET /patients/2/visit-notes` → read Ana's private
-  notes. Notice your session token sitting in the URL / server logs. Then patch:
-  add ownership scoping, stop honoring `?session=`.
+- **UI decoy:** the portal reads Bojan's id from `/profile` and only ever fetches
+  `/patients/<his own id>/…`. Clicking around, you can *only* see your own record.
+  Nothing looks wrong.
+- **Lab:** open Postman, log in as Bojan, then `GET /patients/2/visit-notes` →
+  read Ana's private notes. The UI would never send that request; the API answers
+  it happily. Notice your session token also works as `?session=` in the URL / logs.
+  Then patch: add ownership scoping, stop honoring `?session=`.
 - **Checker:** exploit returns Ana's trophy diagnosis (fail state) → after patch
   returns 403, **and** Bojan can still read his *own* notes (didn't over-fix).
 
@@ -152,9 +175,12 @@ it → fix it → 2-min debrief tying it to the AI-code thread.*
   and filesystem paths.
 - **The agent tell:** `catch (e) { res.status(500).json(e) }` — ships the whole
   error object because that's what made local debugging easy.
-- **Lab:** fingerprint the target's DB, ORM, and internal paths **from its errors
-  alone** — trigger a Prisma error, read what leaks. Then patch: error boundary
-  that logs internally, returns a generic shape + request id.
+- **UI decoy:** the frontend validates every field before submitting, so in normal
+  use the error path never fires — the app looks rock-solid.
+- **Lab:** from Postman, send the malformed/edge requests the UI would never send
+  (wrong types, missing fields, oversized ids) to fingerprint the target's DB, ORM,
+  and internal paths **from its errors alone**. Then patch: error boundary that
+  logs internally, returns a generic shape + request id.
 - **Checker:** responses no longer leak stack/paths/ORM markers; a real error still
   returns a usable generic error + logs server-side.
 
@@ -163,9 +189,13 @@ it → fix it → 2-min debrief tying it to the AI-code thread.*
 - **Sensible elsewhere:** `?limit&offset` is the textbook pattern every tutorial
   teaches. On a sensitive collection with no rate limit, it's a bulk-exfiltration
   API you built *for* the attacker.
-- **Lab:** script an enumeration attack that walks all 50k appointments and finds
-  the trophy buried deep (page ~40+, so page-1 browsing never finds it). Then add
-  **cursor pagination + rate limiting** and watch the same script die.
+- **UI decoy:** the frontend only ever pages over *your own* appointments in small
+  chunks — a handful of records, politely. It never reveals that the endpoint will
+  happily serve everyone's if you ask directly.
+- **Lab:** from a script/Postman, hit the same offset endpoint with no owner scope
+  and walk all 50k appointments, finding the trophy buried deep (page ~40+, so
+  page-1 browsing never finds it). Then add **cursor pagination + rate limiting**
+  and watch the same script die.
 - **Checker:** before — script harvests the deep trophy; after — cursor pagination
   + 429s make the harvest fail within the rate window.
 
@@ -178,6 +208,10 @@ it → fix it → 2-min debrief tying it to the AI-code thread.*
 - **The setup:** Portal ↔ Labs. The Labs service believes whatever the Portal
   claims about who you are (a forged internal header — e.g. `X-User-Id` — reads
   anyone's results).
+- **UI decoy:** through the browser you're same-origin and the Portal sets the
+  internal header honestly from your session, so CORS and the trust header never
+  misbehave. The attack is a direct cross-origin / Postman call that forges the
+  header straight to the Labs service, or a malicious page exploiting wildcard CORS.
 - **Format:** more demo-led + a **redesign exercise** — attendees mark up the
   security-relevant parts of a deliberately bad API spec.
 - **Checker:** forged internal header no longer grants cross-patient lab results;
@@ -231,8 +265,9 @@ requests-lies-stack-traces/
     docker-compose.yml
     Dockerfile
     prisma/schema.prisma
-    src/…                        ← ships vulnerable
-    checker/                     ← "did I win?" verifier
+    src/…                        ← API, ships vulnerable
+    public/ (or views/)          ← the decoy frontend — does everything RIGHT
+    checker/                     ← "did I win?" verifier — attacks the API directly
     README.md                    ← lab instructions
   02-error-disclosure/
   03-enumeration/

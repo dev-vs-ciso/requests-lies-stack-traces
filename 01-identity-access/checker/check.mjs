@@ -20,11 +20,18 @@ function line(ok, text) {
   console.log(`  ${ok ? PASS : red("✗")} ${text}`);
 }
 
-// Exit cleanly. A bare process.exit() while an undici keep-alive socket is still
-// closing triggers a libuv assertion on Windows; a short tick lets it settle.
+// Exit cleanly. Calling process.exit() while an undici keep-alive socket is still
+// closing can trigger a libuv assertion on Windows. Instead we set the exit code
+// and close undici's connection pool so the event loop drains and Node exits on
+// its own — no abrupt exit, no assertion.
 async function finish(code) {
-  await new Promise((r) => setTimeout(r, 100));
-  process.exit(code);
+  process.exitCode = code;
+  try {
+    const dispatcher = globalThis[Symbol.for("undici.globalDispatcher.1")];
+    if (dispatcher && typeof dispatcher.close === "function") await dispatcher.close();
+  } catch {
+    /* best effort; the process will still drain and exit */
+  }
 }
 
 async function login() {
@@ -51,6 +58,7 @@ async function main() {
     console.log(red(`Cannot reach the app: ${e.message}`));
     console.log(dim(`Start it first (setup menu → Start), then re-run.\n`));
     await finish(2);
+    return;
   }
 
   // 1) IDOR: read the victim's private visit notes as the attacker.

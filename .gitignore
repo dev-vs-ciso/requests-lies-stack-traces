@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Working databases (the pristine .db is baked at Docker build; working copies are disposable)
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+!**/prisma/pristine.db
+
+# Env / local
+.env
+.env.local
+*.log
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

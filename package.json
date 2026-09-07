@@ -1,0 +1,9 @@
+{
+  "name": "requests-lies-stack-traces",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Workshop launcher — pick a lab, then use that lab's menu.",
+  "scripts": {
+    "start": "node setup.mjs"
+  }
+}

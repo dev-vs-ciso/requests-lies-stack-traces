@@ -35,13 +35,14 @@ Please arrive with all of this working:
 
 ### Confirm you're ready (2 minutes)
 
+From the repo root:
+
 ```bash
-cd 01-identity-access
-node setup.mjs
+npm start
 ```
 
-Pick **1) Start**. The first run builds the image and seeds ~10,000 patients — give
-it a minute or two. When it's up:
+Pick **Module 1** from the lab list, then **1) Start**. The first run builds the
+image and seeds ~10,000 patients — give it a minute or two. When it's up:
 
 - Open <http://localhost:3001> and log in as **`bojan` / `bojan12345`**.
 - Back in the menu, pick **7) Check my work**. You should see a red
@@ -54,8 +55,9 @@ If you got the red verdict, you're fully set up. 🎉
 
 ## How every lab works
 
-Each module is its own folder (`01-…`, `02-…`, …) with its own `node setup.mjs`
-menu. The rhythm is always the same:
+Run **`npm start`** from the repo root to get a lab picker, then choose a module —
+each one drops you into its own menu. (You can also `cd` into a module folder and
+run `node setup.mjs` directly.) The rhythm is always the same:
 
 1. **Look at the UI.** It behaves perfectly — you can only see your own data. This
    is the trap: **the app is safe from the browser, not from the API.**

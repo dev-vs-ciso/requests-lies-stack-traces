@@ -51,7 +51,8 @@
 
 Rover works the room; Driver puts the checklist on screen. Each person:
 
-1. `git clone` the repo, `cd 01-identity-access`, `node setup.mjs` → **1) Start**.
+1. `git clone` the repo, then from the root run `npm start` → pick **Module 1** →
+   **1) Start**.
 2. Sees the portal at <http://localhost:3001> and can log in as `bojan`.
 3. Runs **7) Check my work** and sees a red **❌ VULNERABLE**. That red is the goal
    — it means everything works.
@@ -177,7 +178,7 @@ and the repo link so they can re-run any lab at home.
 | You (attacker)   | `bojan` / `bojan12345` |
 | Victim (trophy)  | Ана Петровска — patient **id 2** |
 | Provider / admin | `drstoj` / `drstoj12345`, `admin` / `admin12345` |
-| Menu             | `node setup.mjs` in the module folder |
+| Launch           | `npm start` in the repo root → pick a lab (or `node setup.mjs` in a module) |
 | Panic reset      | menu **5) Nuke & repave** |
 | Fast data reset  | menu **4) Reseed data** |
 | Undo their fix   | menu **6) Reset the fix** |

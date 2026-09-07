@@ -258,8 +258,11 @@ mitigation:
 
 ```
 requests-lies-stack-traces/
-  PLAN.md                        ← this doc
-  README.md                      ← attendee quick-start
+  README.md                      ← attendee guide
+  package.json + setup.mjs       ← root launcher: `npm start` → pick a lab
+  docs/
+    PLAN.md                      ← this doc
+    RUNNING-THE-WORKSHOP.md      ← facilitator run-of-show
   01-identity-access/            ← Module 1 (IDOR) — reference app, built first
     setup.mjs                    ← the menu
     docker-compose.yml

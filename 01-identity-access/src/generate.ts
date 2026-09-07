@@ -169,6 +169,10 @@ async function main() {
       scripts.push({ patientId: pid, drug: p.drug, dosage: p.dosage, active: rng() < 0.7 });
     }
   }
+  // Guarantee the hero patients have at least one of each record type, so their
+  // portal tabs are never empty when people explore (everyone logs in as Bojan).
+  scripts.push({ patientId: BOJAN.id, drug: "Focusatol", dosage: "1 capsule each morning", active: true });
+  scripts.push({ patientId: ANA.id, drug: "Calmivan", dosage: "0.5 mg before meetings", active: true });
   await chunkedCreate(scripts, (batch) =>
     prisma.prescription.createMany({ data: batch }),
   );

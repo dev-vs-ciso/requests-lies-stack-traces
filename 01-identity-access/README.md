@@ -1,6 +1,6 @@
 # Module 1 — Identity & Access (IDOR)
 
-> Clinic „Аурора" patient portal. It ships **deliberately vulnerable**. You'll pull
+> Поликлиника „Плацебо" patient portal. It ships **deliberately vulnerable**. You'll pull
 > another patient's private medical notes through the API, then patch it.
 
 ## The story

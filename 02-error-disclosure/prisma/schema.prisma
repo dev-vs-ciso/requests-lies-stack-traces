@@ -1,0 +1,61 @@
+// Module 1 data model — a clinic patient portal.
+// The IDOR trophy lives in VisitNote (Ana's diagnosis). Appointments and
+// prescriptions are here for domain texture; later modules lean on them harder.
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Patient {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  displayName  String
+  passwordHash String
+  role         String   @default("patient") // patient | provider | admin
+  dateOfBirth  DateTime
+  createdAt    DateTime @default(now())
+
+  visitNotes    VisitNote[]
+  appointments  Appointment[]
+  prescriptions Prescription[]
+}
+
+model VisitNote {
+  id         Int      @id @default(autoincrement())
+  patientId  Int
+  patient    Patient  @relation(fields: [patientId], references: [id])
+  providerId Int
+  date       DateTime
+  diagnosis  String
+  notes      String
+
+  @@index([patientId])
+}
+
+model Appointment {
+  id          Int      @id @default(autoincrement())
+  patientId   Int
+  patient     Patient  @relation(fields: [patientId], references: [id])
+  providerId  Int
+  scheduledAt DateTime
+  reason      String
+  status      String   @default("scheduled")
+
+  @@index([patientId])
+}
+
+model Prescription {
+  id        Int     @id @default(autoincrement())
+  patientId Int
+  patient   Patient @relation(fields: [patientId], references: [id])
+  drug      String
+  dosage    String
+  active    Boolean @default(true)
+
+  @@index([patientId])
+}

@@ -1,0 +1,36 @@
+services:
+  labs:
+    build: ./labs
+    image: rlst-m4-labs
+    container_name: rlst-m4-labs
+    # Exposed on 3014 so the lab can demonstrate forging a call to it directly.
+    # Pretend this port is "internal only" — the whole point is that that's not a
+    # security control.
+    ports:
+      - "3014:3000"
+    environment:
+      PORT: "3000"
+      INTERNAL_TOKEN: "portal-shared-secret"
+    volumes:
+      - ./labs/src:/app/src
+    command: ["npx", "nodemon", "--legacy-watch", "--watch", "src", "--ext", "ts,js", "--exec", "tsx src/server.ts"]
+    restart: unless-stopped
+
+  portal:
+    build: ./portal
+    image: rlst-m4-portal
+    container_name: rlst-m4-portal
+    depends_on:
+      - labs
+    ports:
+      - "3004:3000"
+    environment:
+      DATABASE_URL: "file:/app/data/app.db"
+      PORT: "3000"
+      LABS_URL: "http://labs:3000"
+      INTERNAL_TOKEN: "portal-shared-secret"
+    volumes:
+      - ./portal/src:/app/src
+      - ./portal/public:/app/public
+    command: ["npx", "nodemon", "--legacy-watch", "--watch", "src", "--ext", "ts,js", "--exec", "tsx src/server.ts"]
+    restart: unless-stopped

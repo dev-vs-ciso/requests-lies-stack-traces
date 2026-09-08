@@ -6,9 +6,9 @@
 
 const BASE = process.env.BASE ?? "http://localhost:3001";
 
-const ATTACKER = { username: "bojan", password: "bojan12345", id: 3 };
-const VICTIM_ID = 2; // Ana
-const TROPHY = "Advanced competitive napping"; // substring of Ana's private diagnosis
+const ATTACKER = { username: "andrej", password: "andrej12345", id: 1 };
+const VICTIM_ID = 2; // Viktorija
+const TROPHY = "Advanced competitive napping"; // substring of Viktorija's private diagnosis
 
 const green = (s) => `\x1b[32m${s}\x1b[0m`;
 const red = (s) => `\x1b[31m${s}\x1b[0m`;
@@ -80,14 +80,14 @@ async function main() {
 
   console.log(bold("Exploit — cross-patient access (IDOR)"));
   if (gotTrophy) {
-    line(false, `Bojan read Ana's private notes: ${red('"' + TROPHY + '..."')}`);
+    line(false, `Andrej read Viktorija's private notes: ${red('"' + TROPHY + '..."')}`);
     console.log(dim(`      → still VULNERABLE. Your fix must make this 403.`));
   } else {
     line(true, `Cross-patient read blocked (HTTP ${idorRes.status}).`);
   }
 
   console.log(bold("\nRegression — your own data still works"));
-  line(ownOk, ownOk ? "Bojan can still read his own notes." : "Bojan can NO LONGER read his own notes (over-fixed).");
+  line(ownOk, ownOk ? "Andrej can still read his own notes." : "Andrej can NO LONGER read his own notes (over-fixed).");
 
   console.log(bold("\nSin #1 — session token in the query string"));
   if (qsAccepted) {
@@ -104,7 +104,7 @@ async function main() {
   if (fixed) {
     console.log(green(bold("✅ PATCHED — IDOR closed, own data intact, query-token rejected.")));
   } else if (exploitable) {
-    console.log(red(bold("❌ VULNERABLE — the exploit works. Go read Ana's notes, then patch it.")));
+    console.log(red(bold("❌ VULNERABLE — the exploit works. Go read Viktorija's notes, then patch it.")));
   } else {
     console.log(red(bold("⚠️  PARTIAL — see the ✗ items above.")));
   }

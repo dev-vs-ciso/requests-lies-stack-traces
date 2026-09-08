@@ -44,7 +44,7 @@ npm start
 Pick **Module 1** from the lab list, then **1) Start**. The first run builds the
 image and seeds ~10,000 patients — give it a minute or two. When it's up:
 
-- Open <http://localhost:3001> and log in as **`bojan` / `bojan12345`**.
+- Open <http://localhost:3001> and log in as **`andrej` / `andrej12345`**.
 - Back in the menu, pick **7) Check my work**. You should see a red
   **❌ VULNERABLE**. **That red is success** — it means the app is running and the
   first bug is live, ready for you to exploit.
@@ -72,10 +72,9 @@ run `node setup.mjs` directly.) The rhythm is always the same:
 
 | Who | Login | Role |
 |-----|-------|------|
-| **You** — Бојан Трајаноски | `bojan` / `bojan12345` | patient (the attacker) |
-| **Ана Петровска** | `ana` / `ana12345` | patient — **her records are the prize** |
+| **You** — Андреј Трајаноски | `andrej` / `andrej12345` | patient (the attacker), id 1 |
+| **Викторија Петровска** | `viktorija` / `viktorija12345` | patient — **her records are the prize**, id 2 |
 | Д-р Стојановска | `drstoj` / `drstoj12345` | provider |
-| Elena | `admin` / `admin12345` | front-desk admin |
 
 The patient data is randomized but deliberately absurd ("diagnosis: chronic
 sarcasm") — real stakes, unreal data.

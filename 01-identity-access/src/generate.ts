@@ -15,7 +15,7 @@ import {
   usernameBase,
 } from "./data/names";
 import { DIAGNOSES, APPT_REASONS, PRESCRIPTIONS } from "./data/conditions";
-import { CAST, ANA, BOJAN, DR_STOJANOVSKA, ANA_TROPHY, BULK_START_ID } from "./data/cast";
+import { CAST, ANDREJ, VIKTORIJA, DR_STOJANOVSKA, VIKTORIJA_TROPHY, BULK_START_ID } from "./data/cast";
 
 const PATIENT_COUNT = Number(process.env.PATIENT_COUNT ?? 10_000);
 const CHUNK = 5_000;
@@ -139,17 +139,17 @@ async function main() {
       });
     }
   }
-  // The trophy: Ana's private note. Bojan gets a guaranteed own note so the
+  // The trophy: Viktorija's private note. Andrej gets a guaranteed own note so the
   // post-fix regression check ("can still read my own") has something to read.
   notes.push({
-    patientId: ANA.id,
+    patientId: VIKTORIJA.id,
     providerId: PROVIDER_ID,
     date: new Date("2025-12-15T10:30:00Z"),
-    diagnosis: ANA_TROPHY.diagnosis,
-    notes: ANA_TROPHY.notes,
+    diagnosis: VIKTORIJA_TROPHY.diagnosis,
+    notes: VIKTORIJA_TROPHY.notes,
   });
   notes.push({
-    patientId: BOJAN.id,
+    patientId: ANDREJ.id,
     providerId: PROVIDER_ID,
     date: new Date("2025-11-20T14:00:00Z"),
     diagnosis: "Mild-to-moderate inbox anxiety",
@@ -171,8 +171,8 @@ async function main() {
   }
   // Guarantee the hero patients have at least one of each record type, so their
   // portal tabs are never empty when people explore (everyone logs in as Bojan).
-  scripts.push({ patientId: BOJAN.id, drug: "Focusatol", dosage: "1 capsule each morning", active: true });
-  scripts.push({ patientId: ANA.id, drug: "Calmivan", dosage: "0.5 mg before meetings", active: true });
+  scripts.push({ patientId: ANDREJ.id, drug: "Focusatol", dosage: "1 capsule each morning", active: true });
+  scripts.push({ patientId: VIKTORIJA.id, drug: "Calmivan", dosage: "0.5 mg before meetings", active: true });
   await chunkedCreate(scripts, (batch) =>
     prisma.prescription.createMany({ data: batch }),
   );

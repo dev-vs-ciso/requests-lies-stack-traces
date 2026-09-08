@@ -28,10 +28,10 @@ const PUBLIC_PATIENT_FIELDS = {
 // any other patient's records.
 //
 // THE FIX (module 1 lab): before returning anyone's data, assert the requested id
-// belongs to the caller — unless the caller is a provider/admin. Something like:
+// belongs to the caller — unless the caller is a provider. Something like:
 //
 //     function assertOwnership(req: AuthedRequest, id: number, res): boolean {
-//       if (req.auth!.role !== "patient") return true;        // providers/admins ok
+//       if (req.auth!.role !== "patient") return true;        // providers ok
 //       if (id === req.auth!.patientId) return true;          // your own record ok
 //       res.status(403).json({ error: "Forbidden" });
 //       return false;

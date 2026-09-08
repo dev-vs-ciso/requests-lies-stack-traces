@@ -36,7 +36,7 @@ a vuln only looks dumb, we've written it wrong.
 Postman.** Every app ships a small but *legit* frontend that does everything right:
 
 - it reads your own id from a `/profile` (or `/me`) call and only ever requests
-  *your own* resources — so there's no way to ask for Ana's record by clicking;
+  *your own* resources — so there's no way to ask for Viktorija's record by clicking;
 - it authenticates with the session cookie, never the `?session=` query param;
 - it validates inputs client-side, so the malformed requests that trigger verbose
   errors never leave the browser;
@@ -107,12 +107,11 @@ directly, it *asks* the Labs service. Otherwise there's no trust boundary to bre
 Cyrillic display names, Latin usernames. Same login everywhere, so the muscle
 memory transfers module to module.
 
-| Role                | Display name        | Username | ID | Notes |
-|---------------------|---------------------|----------|----|-------|
-| **You (attacker)**  | Бојан Трајаноски    | `bojan`  | 3  | Participants log in as Bojan in every app. |
-| **Victim (trophy)** | Ана Петровска       | `ana`    | 2  | Her diagnosis is the prize. |
-| **Provider**        | Д-р Стојановска     | `drstoj` | 4  | So ownership isn't just patient-vs-patient. |
-| **Front desk/admin**| Елена (admin)       | `admin`  | 1  | For the "auth present, ownership missing" role confusion. |
+| Role                | Display name        | Username    | ID | Notes |
+|---------------------|---------------------|-------------|----|-------|
+| **You (attacker)**  | Андреј Трајаноски   | `andrej`    | 1  | Participants log in as Andrej. Id 1, so the victim is literally "your id + 1". |
+| **Victim (trophy)** | Викторија Петровска | `viktorija` | 2  | Her diagnosis is the prize. |
+| **Provider**        | Д-р Стојановска     | `drstoj`    | 3  | So ownership isn't just patient-vs-patient. |
 
 Bulk population fills in **around** the cast: ~10,000 patients, ~50,000
 appointments.
@@ -134,7 +133,7 @@ appointments.
 
 One `node setup` per folder. Options:
 
-1. **Start** — build + up, then print URLs + Bojan/Ana credentials.
+1. **Start** — build + up, then print URLs + Andrej/Viktorija credentials.
 2. **Stop** — down, keep data.
 3. **Nuke & repave** — `down -v`, rebuild, reseed. The panic button.
 4. **Reseed only** — reset data without a full rebuild (the one people actually hit
@@ -158,15 +157,15 @@ it → fix it → 2-min debrief tying it to the AI-code thread.*
   links and kiosk/QR check-in work. Both are fine — until this multi-tenant clinic.
 - **The agent tell:** it wrote the auth middleware (you must be logged in ✓) and
   forgot the ownership check (…as *this* patient ✗).
-- **UI decoy:** the portal reads Bojan's id from `/profile` and only ever fetches
+- **UI decoy:** the portal reads Andrej's id from `/profile` and only ever fetches
   `/patients/<his own id>/…`. Clicking around, you can *only* see your own record.
   Nothing looks wrong.
-- **Lab:** open Postman, log in as Bojan, then `GET /patients/2/visit-notes` →
-  read Ana's private notes. The UI would never send that request; the API answers
-  it happily. Notice your session token also works as `?session=` in the URL / logs.
-  Then patch: add ownership scoping, stop honoring `?session=`.
-- **Checker:** exploit returns Ana's trophy diagnosis (fail state) → after patch
-  returns 403, **and** Bojan can still read his *own* notes (didn't over-fix).
+- **Lab:** open Postman, log in as Andrej, then `GET /patients/2/visit-notes` →
+  read Viktorija's private notes. The UI would never send that request; the API
+  answers it happily. Notice your session token also works as `?session=` in the
+  URL / logs. Then patch: add ownership scoping, stop honoring `?session=`.
+- **Checker:** exploit returns Viktorija's trophy diagnosis (fail state) → after
+  patch returns 403, **and** Andrej can still read his *own* notes (didn't over-fix).
 
 ### Module 2 — Error Handling & Information Disclosure
 - **Sins:** stack traces in prod · error messages that overshare.

@@ -53,7 +53,7 @@ Rover works the room; Driver puts the checklist on screen. Each person:
 
 1. `git clone` the repo, then from the root run `npm start` → pick **Module 1** →
    **1) Start**.
-2. Sees the portal at <http://localhost:3001> and can log in as `bojan`.
+2. Sees the portal at <http://localhost:3001> and can log in as `andrej`.
 3. Runs **7) Check my work** and sees a red **❌ VULNERABLE**. That red is the goal
    — it means everything works.
 
@@ -73,8 +73,8 @@ Driver, ~15 min. Land three ideas, no more:
    agents write are green because they only cover the happy path the agent just
    built. We'll name why each default happens and then go find it.
 
-Introduce the domain once: clinic patient portal, you're **Бојан**, the victim is
-**Ана**, and every "win" today is a HIPAA-reportable breach in real life.
+Introduce the domain once: clinic patient portal, you're **Андреј**, the victim is
+**Викторија**, and every "win" today is a HIPAA-reportable breach in real life.
 
 ---
 
@@ -87,14 +87,14 @@ Each module runs the same rhythm: **Frame → Break → Fix → Gate → Debrief
 - **Frame (4 min).** "Looking a record up by the id in the URL is *correct* in a
   single-tenant admin tool. Here it means any patient can read any other patient."
 - **Break (12 min).** Everyone opens the UI first — click around, confirm you can
-  only see your own data. *Then* switch to curl/Postman and pull Ana's notes
+  only see your own data. *Then* switch to curl/Postman and pull Viktorija's notes
   (`/api/patients/2/visit-notes`). Rover helps stragglers; Driver demos on screen.
   Call out the session token sitting in `?session=` and in the logs.
 - **Fix (12 min).** Two sins, both flagged in code comments: the missing ownership
   check (`src/routes/patients.ts`) and the query-string token (`src/session.ts`).
   Edit on the host; nodemon reloads in the container.
 - **Gate.** Everyone runs **7) Check my work** until it's green
-  (`✅ PATCHED`). The checker also proves they didn't *over*-fix (Bojan still reads
+  (`✅ PATCHED`). The checker also proves they didn't *over*-fix (Andrej still reads
   his own notes).
 - **Debrief (2 min).** "The agent wrote the auth check and stopped. Authentication
   is not authorization. The UI and the happy-path test both only ever fetch *your*
@@ -175,9 +175,9 @@ and the repo link so they can re-run any lab at home.
 | Thing            | Value |
 |------------------|-------|
 | Portal URL       | <http://localhost:3001> (Module 1; later modules increment) |
-| You (attacker)   | `bojan` / `bojan12345` |
-| Victim (trophy)  | Ана Петровска — patient **id 2** |
-| Provider / admin | `drstoj` / `drstoj12345`, `admin` / `admin12345` |
+| You (attacker)   | `andrej` / `andrej12345` — patient **id 1** |
+| Victim (trophy)  | Викторија Петровска — patient **id 2** |
+| Provider         | `drstoj` / `drstoj12345` |
 | Launch           | `npm start` in the repo root → pick a lab (or `node setup.mjs` in a module) |
 | Panic reset      | menu **5) Nuke & repave** |
 | Fast data reset  | menu **4) Reseed data** |

@@ -5,9 +5,9 @@
 
 ## The story
 
-You are **Бојан Трајаноски** (`bojan`), a patient. Your neighbour in the waiting
-room is **Ана Петровска** — patient **id 2**. Her visit notes are private. By the
-end of this lab you'll have read them, and then made that impossible.
+You are **Андреј Трајаноски** (`andrej`), patient **id 1**. Your neighbour in the
+waiting room is **Викторија Петровска** — patient **id 2**. Her visit notes are
+private. By the end of this lab you'll have read them, and then made that impossible.
 
 ## Run it
 
@@ -19,7 +19,7 @@ Pick **1) Start**. First run builds the image and seeds ~10,000 patients and
 ~50,000 appointments (takes a minute). When it's up you'll get the URL and logins.
 
 - Portal UI: <http://localhost:3001>
-- You: `bojan / bojan12345`
+- You: `andrej / andrej12345`
 
 ## Part A — look around the UI (it's a decoy)
 
@@ -36,16 +36,16 @@ The UI plays by the rules. `curl` doesn't. First, log in and keep the cookie:
 ```bash
 curl -i -c cookies.txt -X POST http://localhost:3001/api/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"bojan","password":"bojan12345"}'
+  -d '{"username":"andrej","password":"andrej12345"}'
 ```
 
-Now ask for **Ana's** notes (patient id 2) — a request the UI would never send:
+Now ask for **Viktorija's** notes (patient id 2) — a request the UI would never send:
 
 ```bash
 curl -b cookies.txt http://localhost:3001/api/patients/2/visit-notes
 ```
 
-You just read another patient's private diagnosis. Try id `1`, `4`, `5`, `6`… the
+You just read another patient's private diagnosis. Try id `3`, `4`, `5`, `6`… the
 ids are sequential, so the whole clinic is a `for` loop away. This is **IDOR**:
 Insecure Direct Object Reference.
 
@@ -69,11 +69,11 @@ Two sins to close. Both are called out in comments in the code:
 
 1. **The missing ownership check** — `src/routes/patients.ts`. Before returning a
    patient's data, assert the requested `:id` belongs to the caller (allow
-   providers/admins through). A helper sketch is in the file's comment.
+   providers through). A helper sketch is in the file's comment.
 2. **The query-string token** — `src/session.ts`. Stop honouring
    `req.query.session`; read the token from the cookie only.
 
-Edit the files on your machine — the container hot-reloads (`tsx watch`). If a
+Edit the files on your machine — the container hot-reloads (nodemon). If a
 change doesn't take, use setup → **3) Restart app**.
 
 Then run **setup → 7) Check my work** again. You want:
@@ -82,7 +82,7 @@ Then run **setup → 7) Check my work** again. You want:
 ✅ PATCHED — IDOR closed, own data intact, query-token rejected.
 ```
 
-The checker also verifies you didn't *over*-fix: Bojan must still read his **own**
+The checker also verifies you didn't *over*-fix: Andrej must still read his **own**
 notes.
 
 ## Reset / rescue

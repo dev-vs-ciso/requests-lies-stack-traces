@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="mk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Поликлиника Плацебо — Пациентски портал</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo">🏥</span>
+        <div>
+          <div class="brand-name">Поликлиника „Плацебо“</div>
+          <div class="brand-sub">Пациентски портал</div>
+        </div>
+      </div>
+      <div class="user-area" id="user-area" hidden>
+        <span class="user-chip"><span class="avatar" id="me-initial"></span><span id="me-name"></span></span>
+        <button id="logout" class="btn-ghost">Одјава</button>
+      </div>
+    </header>
+
+    <main>
+      <!-- Login -->
+      <section id="login-view" class="login-wrap">
+        <form id="login-form" class="card login-card">
+          <h2>Најава</h2>
+          <label>Корисничко име
+            <input name="username" autocomplete="username" value="andrej" />
+          </label>
+          <label>Лозинка
+            <input name="password" type="password" autocomplete="current-password" value="andrej12345" />
+          </label>
+          <button type="submit" class="btn-primary">Најави се</button>
+          <p id="login-error" class="error" hidden></p>
+          <p class="hint">Демо најава: <code>andrej / andrej12345</code></p>
+        </form>
+      </section>
+
+      <!-- Dashboard -->
+      <section id="dash-view" hidden>
+        <div class="notice">
+          Овој портал ти прикажува <strong>само твои</strong> податоци.
+          <span class="notice-en">(This portal only ever requests your own records — there's no way to
+          ask for another patient here. That's the whole point of Module 1: the bug lives in the API, not the UI.)</span>
+        </div>
+
+        <nav class="tabs" role="tablist" aria-label="Секции">
+          <button class="tab" role="tab" data-tab="overview" aria-selected="true">Преглед</button>
+          <button class="tab" role="tab" data-tab="notes" aria-selected="false">Белешки <span class="count" id="count-notes"></span></button>
+          <button class="tab" role="tab" data-tab="appointments" aria-selected="false">Термини <span class="count" id="count-appointments"></span></button>
+          <button class="tab" role="tab" data-tab="prescriptions" aria-selected="false">Терапии <span class="count" id="count-prescriptions"></span></button>
+        </nav>
+
+        <div class="panel" id="panel-overview" role="tabpanel"></div>
+        <div class="panel" id="panel-notes" role="tabpanel" hidden></div>
+        <div class="panel" id="panel-appointments" role="tabpanel" hidden></div>
+        <div class="panel" id="panel-prescriptions" role="tabpanel" hidden></div>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

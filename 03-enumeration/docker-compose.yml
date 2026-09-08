@@ -1,0 +1,18 @@
+services:
+  portal:
+    build: .
+    image: rlst-m3-portal
+    container_name: rlst-m3-portal
+    ports:
+      - "3003:3000"
+    environment:
+      DATABASE_URL: "file:/app/data/app.db"
+      PORT: "3000"
+    # Live-edit the source for the fix-it lab. nodemon --legacy-watch polls the
+    # filesystem, which is what makes reload work over a Windows/macOS bind mount
+    # (native fs events don't cross the Docker VM boundary reliably).
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+    command: ["npx", "nodemon", "--legacy-watch", "--watch", "src", "--ext", "ts,js", "--exec", "tsx src/server.ts"]
+    restart: unless-stopped

@@ -283,6 +283,13 @@ requests-lies-stack-traces/
 seeded generator, cast, checker, vulnerable source, README). The other four are
 clones with a different sin swapped in. One app done right beats five half-built.
 
+**Status (first pass): all five modules built.** Each ships vulnerable with a
+checker and a lab README, and was verified locally (exploit confirmed → fix flips
+the checker to green). Module 1 is also full-Docker-verified; Modules 2–5 reuse its
+identical, proven Docker setup. Modules 2–4 start from a *patched* base so each
+foregrounds a single sin; Module 5 stacks all five behind a green test suite.
+Remaining polish: full Docker smoke-test of 2–5, and the §9 calls below.
+
 ---
 
 ## 9. Open decisions / TODO before the room

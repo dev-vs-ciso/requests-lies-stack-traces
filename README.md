@@ -99,16 +99,18 @@ repave** returns it to a clean, identical starting state. Break things freely.
 
 ## The modules
 
-1. **Identity & Access** — pull another patient's records through an IDOR bug, then
-   patch it. *(built)*
-2. **Error Handling & Information Disclosure** — fingerprint the app's database, ORM,
-   and internal paths from its error messages alone.
-3. **Pagination, Rate Limiting & Enumeration** — script an attack that walks a
-   sensitive collection, then kill it with cursor pagination and rate limiting.
-4. **Versioning, CORS & Trust Boundaries** — forge trust between services and
-   redesign the security-relevant parts of a bad API spec.
-5. **Review Fatigue & the Production Placebo** — hunt planted vulnerabilities in an
-   "agent-built" API whose tests are all green.
+1. **Identity & Access** (`:3001`) — pull another patient's records through an IDOR
+   bug, then patch it.
+2. **Error Handling & Information Disclosure** (`:3002`) — fingerprint the app's
+   database, ORM, and internal paths from its error messages alone.
+3. **Pagination, Rate Limiting & Enumeration** (`:3003`) — script an attack that
+   walks a sensitive collection, then kill it with cursor pagination and rate
+   limiting.
+4. **Versioning, CORS & Trust Boundaries** (`:3004` portal, `:3014` labs) — forge
+   trust between two services and redesign the security-relevant parts of a bad API
+   spec.
+5. **Review Fatigue & the Production Placebo** (`:3005`) — hunt five planted
+   vulnerabilities in an "agent-built" API whose tests are all green.
 
 ---
 

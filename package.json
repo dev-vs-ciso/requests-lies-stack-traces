@@ -4,6 +4,7 @@
   "private": true,
   "description": "Workshop launcher — pick a lab, then use that lab's menu.",
   "scripts": {
-    "start": "node setup.mjs"
+    "start": "node setup.mjs",
+    "smoke": "node scripts/smoke-test.mjs"
   }
 }

@@ -290,6 +290,9 @@ identical, proven Docker setup. Modules 2–4 start from a *patched* base so eac
 foregrounds a single sin; Module 5 stacks all five behind a green test suite.
 Remaining polish: full Docker smoke-test of 2–5, and the §9 calls below.
 
+Run the Docker smoke-test (build + health + checker + teardown, per module) with
+`npm run smoke` from the repo root (or `node scripts/smoke-test.mjs 04` for one).
+
 ---
 
 ## 9. Open decisions / TODO before the room

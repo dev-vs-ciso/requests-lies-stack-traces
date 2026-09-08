@@ -47,7 +47,7 @@ async function waitForHealth(timeoutMs = 60_000) {
 function credentials() {
   console.log(bold(`\n  Portal:  ${cyan(URL)}`));
   console.log(`  You (attacker):  ${bold("andrej / andrej12345")}  ${dim("(patient id 1)")}`);
-  console.log(dim(`  Victim: Викторија Петровска — patient ${bold("id 2")} (the trophy)`));
+  console.log(dim(`  Victim: Викторија Врангаловска — patient ${bold("id 2")} (the trophy)`));
   console.log(dim(`  Also: drstoj / drstoj12345 (provider)\n`));
 }
 

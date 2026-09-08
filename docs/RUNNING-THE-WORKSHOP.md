@@ -176,7 +176,7 @@ and the repo link so they can re-run any lab at home.
 |------------------|-------|
 | Portal URL       | <http://localhost:3001> (Module 1; later modules increment) |
 | You (attacker)   | `andrej` / `andrej12345` — patient **id 1** |
-| Victim (trophy)  | Викторија Петровска — patient **id 2** |
+| Victim (trophy)  | Викторија Врангаловска — patient **id 2** |
 | Provider         | `drstoj` / `drstoj12345` |
 | Launch           | `npm start` in the repo root → pick a lab (or `node setup.mjs` in a module) |
 | Panic reset      | menu **5) Nuke & repave** |

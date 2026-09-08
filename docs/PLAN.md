@@ -109,8 +109,8 @@ memory transfers module to module.
 
 | Role                | Display name        | Username    | ID | Notes |
 |---------------------|---------------------|-------------|----|-------|
-| **You (attacker)**  | Андреј Трајаноски   | `andrej`    | 1  | Participants log in as Andrej. Id 1, so the victim is literally "your id + 1". |
-| **Victim (trophy)** | Викторија Петровска | `viktorija` | 2  | Her diagnosis is the prize. |
+| **You (attacker)**  | Андреј Аврамчевски   | `andrej`    | 1  | Participants log in as Andrej. Id 1, so the victim is literally "your id + 1". |
+| **Victim (trophy)** | Викторија Врангаловска | `viktorija` | 2  | Her diagnosis is the prize. |
 | **Provider**        | Д-р Стојановска     | `drstoj`    | 3  | So ownership isn't just patient-vs-patient. |
 
 Bulk population fills in **around** the cast: ~10,000 patients, ~50,000

@@ -72,8 +72,8 @@ run `node setup.mjs` directly.) The rhythm is always the same:
 
 | Who | Login | Role |
 |-----|-------|------|
-| **You** — Андреј Трајаноски | `andrej` / `andrej12345` | patient (the attacker), id 1 |
-| **Викторија Петровска** | `viktorija` / `viktorija12345` | patient — **her records are the prize**, id 2 |
+| **You** — Андреј Аврамчевски | `andrej` / `andrej12345` | patient (the attacker), id 1 |
+| **Викторија Врангаловска** | `viktorija` / `viktorija12345` | patient — **her records are the prize**, id 2 |
 | Д-р Стојановска | `drstoj` / `drstoj12345` | provider |
 
 The patient data is randomized but deliberately absurd ("diagnosis: chronic

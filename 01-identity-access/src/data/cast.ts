@@ -22,7 +22,7 @@ export const ANDREJ: CastMember = {
   id: 1,
   username: "andrej",
   password: "andrej12345",
-  displayName: "Андреј Трајаноски",
+  displayName: "Андреј Аврамчевски",
   role: "patient",
   dateOfBirth: "1988-11-02",
 };
@@ -32,7 +32,7 @@ export const VIKTORIJA: CastMember = {
   id: 2,
   username: "viktorija",
   password: "viktorija12345",
-  displayName: "Викторија Петровска",
+  displayName: "Викторија Врангаловска",
   role: "patient",
   dateOfBirth: "1991-07-24",
 };

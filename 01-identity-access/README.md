@@ -5,8 +5,8 @@
 
 ## The story
 
-You are **Андреј Трајаноски** (`andrej`), patient **id 1**. Your neighbour in the
-waiting room is **Викторија Петровска** — patient **id 2**. Her visit notes are
+You are **Андреј Аврамчевски** (`andrej`), patient **id 1**. Your neighbour in the
+waiting room is **Викторија Врангаловска** — patient **id 2**. Her visit notes are
 private. By the end of this lab you'll have read them, and then made that impossible.
 
 ## Run it

@@ -58,6 +58,23 @@ Two more things to notice:
   ```
 - Run **setup → 7) Check my work**. It confirms the exploit in red.
 
+### The subtle one — nested resources
+
+Suppose you patch the ownership check so `/patients/2/...` returns `403`. Safe now?
+There's a nested endpoint for a single note:
+`/patients/:patientId/visit-notes/:noteId`. It fetches the note by its **global**
+id and ignores the patient in the URL. So use your **own** patient id (the ownership
+check passes!) with **Viktorija's** note id (`90002`):
+
+```bash
+curl -b cookies.txt http://localhost:3001/api/patients/1/visit-notes/90002
+```
+
+Still her note. "Is patient 1 mine?" → yes. But nobody checked that **note 90002
+belongs to patient 1**. Access control (*is this mine?*) and ownership/relationship
+validation (*does this child belong to that parent?*) are two different questions —
+and an agent that adds the first almost never adds the second.
+
 ### Why an agent writes exactly this
 It wrote the auth middleware — *"you must be logged in"* ✓ — and stopped. The
 second half, *"…and this record must be yours,"* is a separate check it never
@@ -65,13 +82,17 @@ added. The happy-path test (fetch **my** record) passes, so nothing complains.
 
 ## Part C — fix it
 
-Two sins to close. Both are called out in comments in the code:
+Three sins to close. All are called out in comments in the code:
 
 1. **The missing ownership check** — `src/routes/patients.ts`. Before returning a
    patient's data, assert the requested `:id` belongs to the caller (allow
    providers through). A helper sketch is in the file's comment.
 2. **The query-string token** — `src/session.ts`. Stop honouring
    `req.query.session`; read the token from the cookie only.
+3. **The nested relationship** — `src/routes/patients.ts`, the
+   `/patients/:patientId/visit-notes/:noteId` handler. Ownership on `:patientId`
+   isn't enough — scope the child to its parent:
+   `prisma.visitNote.findFirst({ where: { id: noteId, patientId } })`.
 
 Edit the files on your machine — the container hot-reloads (nodemon). If a
 change doesn't take, use setup → **3) Restart app**.
@@ -79,7 +100,7 @@ change doesn't take, use setup → **3) Restart app**.
 Then run **setup → 7) Check my work** again. You want:
 
 ```
-✅ PATCHED — IDOR closed, own data intact, query-token rejected.
+✅ PATCHED — access + ownership closed, own data intact, query-token rejected.
 ```
 
 The checker also verifies you didn't *over*-fix: Andrej must still read his **own**

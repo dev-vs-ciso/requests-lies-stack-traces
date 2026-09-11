@@ -58,21 +58,44 @@ async function loadNotes() {
   el.innerHTML = loading();
   const notes = await api(`/api/patients/${me.id}/visit-notes`).then((r) => r.json());
   $("#count-notes").textContent = notes.length || "";
-  el.innerHTML = notes.length
-    ? notes
-        .map(
-          (n) => `
+  if (!notes.length) {
+    el.innerHTML = empty("Нема белешки од прегледи.");
+    return;
+  }
+  el.innerHTML = notes
+    .map(
+      (n) => `
       <article class="card record">
         <div class="record-head">
           <span class="badge">Дијагноза</span>
           <time>${fmtDate(n.date)}</time>
         </div>
         <h3>${escapeHtml(n.diagnosis)}</h3>
-        <p>${escapeHtml(n.notes)}</p>
+        <button class="link-btn" data-note="${n.id}">Прикажи детали</button>
+        <p class="note-detail" data-note="${n.id}" hidden></p>
       </article>`,
-        )
-        .join("")
-    : empty("Нема белешки од прегледи.");
+    )
+    .join("");
+
+  // Note detail loads via the NESTED endpoint — always with your OWN id + the note
+  // id (/api/patients/<me>/visit-notes/<id>). The UI can only ever ask for its own.
+  el.querySelectorAll(".link-btn").forEach((btn) =>
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.note;
+      const p = el.querySelector(`.note-detail[data-note="${id}"]`);
+      if (!p.hidden) {
+        p.hidden = true;
+        btn.textContent = "Прикажи детали";
+        return;
+      }
+      const detail = await api(`/api/patients/${me.id}/visit-notes/${id}`).then((r) =>
+        r.ok ? r.json() : null,
+      );
+      p.textContent = detail ? detail.notes : "—";
+      p.hidden = false;
+      btn.textContent = "Сокриј детали";
+    }),
+  );
 }
 
 async function loadAppointments() {

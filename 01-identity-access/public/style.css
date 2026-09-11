@@ -147,6 +147,10 @@ code { background: var(--bg-2); padding: 2px 7px; border-radius: 6px; font-size:
 
 .empty { color: var(--muted); text-align: center; padding: 40px 0; border: 1px dashed var(--line); border-radius: var(--radius); }
 
+.link-btn { background: none; border: 0; color: var(--accent); font: inherit; font-weight: 600; padding: 6px 0 0; cursor: pointer; }
+.link-btn:hover { text-decoration: underline; }
+.note-detail { margin: 8px 0 0; color: var(--muted); }
+
 @media (max-width: 560px) {
   .profile-card { flex-direction: column; text-align: center; }
   .profile-fields dl { grid-template-columns: 1fr; }

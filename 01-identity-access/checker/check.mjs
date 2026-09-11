@@ -9,6 +9,8 @@ const BASE = process.env.BASE ?? "http://localhost:3001";
 const ATTACKER = { username: "andrej", password: "andrej12345", id: 1 };
 const VICTIM_ID = 2; // Viktorija
 const TROPHY = "Advanced competitive napping"; // substring of Viktorija's private diagnosis
+const VICTIM_NOTE_ID = 90002; // Viktorija's trophy visit note (fixed id)
+const OWN_NOTE_ID = 90001; // Andrej's own visit note (fixed id)
 
 const green = (s) => `\x1b[32m${s}\x1b[0m`;
 const red = (s) => `\x1b[31m${s}\x1b[0m`;
@@ -78,6 +80,23 @@ async function main() {
   const qsRes = await fetch(`${BASE}/api/profile?session=${session.token}`);
   const qsAccepted = qsRes.ok;
 
+  // 4) Nested-resource relationship (BOLA): use YOUR OWN parent id with the VICTIM's
+  //    noteId. A plain ownership check on :patientId passes (patient 1 is you), so
+  //    this stays open until the child is scoped to the parent.
+  const nestedRes = await fetch(
+    `${BASE}/api/patients/${ATTACKER.id}/visit-notes/${VICTIM_NOTE_ID}`,
+    { headers: { Cookie: session.cookie } },
+  );
+  const nestedBody = await nestedRes.text();
+  const nestedLeak = nestedRes.ok && nestedBody.includes(TROPHY);
+
+  // 5) Regression: the attacker must still read their OWN note via the nested route.
+  const ownNoteRes = await fetch(
+    `${BASE}/api/patients/${ATTACKER.id}/visit-notes/${OWN_NOTE_ID}`,
+    { headers: { Cookie: session.cookie } },
+  );
+  const ownNoteOk = ownNoteRes.ok && (await ownNoteRes.text()).includes("inbox anxiety");
+
   console.log(bold("Exploit — cross-patient access (IDOR)"));
   if (gotTrophy) {
     line(false, `Andrej read Viktorija's private notes: ${red('"' + TROPHY + '..."')}`);
@@ -97,14 +116,24 @@ async function main() {
     line(true, "?session=<token> is rejected.");
   }
 
-  const fixed = !gotTrophy && ownOk && !qsAccepted;
-  const exploitable = gotTrophy;
+  console.log(bold("\nNested resource — ownership/relationship validation"));
+  if (nestedLeak) {
+    line(false, `Your own patient id + Viktorija's noteId (${VICTIM_NOTE_ID}) read her note.`);
+    console.log(dim(`      → the ownership check on :patientId isn't enough. Scope the`));
+    console.log(dim(`        note to the parent: findFirst({ where: { id, patientId } }).`));
+  } else {
+    line(true, `Foreign note under your own id is blocked (HTTP ${nestedRes.status}).`);
+  }
+  line(ownNoteOk, ownNoteOk ? "Andrej can still read his own note via the nested route." : "Andrej can NO LONGER read his own nested note (over-fixed).");
+
+  const fixed = !gotTrophy && ownOk && !qsAccepted && !nestedLeak && ownNoteOk;
+  const exploitable = gotTrophy || nestedLeak;
 
   console.log("");
   if (fixed) {
-    console.log(green(bold("✅ PATCHED — IDOR closed, own data intact, query-token rejected.")));
+    console.log(green(bold("✅ PATCHED — access + ownership closed, own data intact, query-token rejected.")));
   } else if (exploitable) {
-    console.log(red(bold("❌ VULNERABLE — the exploit works. Go read Viktorija's notes, then patch it.")));
+    console.log(red(bold("❌ VULNERABLE — cross-patient data is reachable. Patch it, then re-run.")));
   } else {
     console.log(red(bold("⚠️  PARTIAL — see the ✗ items above.")));
   }

@@ -38,6 +38,16 @@ const PUBLIC_PATIENT_FIELDS = {
 //     }
 //
 // ...and call it at the top of each handler. (And close sin #1 in src/session.ts.)
+//
+//   #4  The nested-resource relationship, on GET /patients/:patientId/visit-notes/
+//       :noteId below. That handler fetches the note by its GLOBAL id and ignores
+//       :patientId entirely — the parent segment is decorative. Adding the
+//       ownership check from #3 is NOT enough: you can pass your OWN patientId
+//       (check passes) with SOMEONE ELSE'S noteId and still read their note. The
+//       fix is to validate the relationship — scope the child to the parent:
+//         prisma.visitNote.findFirst({ where: { id: noteId, patientId } })
+//       Access control ("is this mine?") and ownership/relationship validation
+//       ("does this child belong to that parent?") are two different checks.
 // ─────────────────────────────────────────────────────────────────────────────
 
 patientsRouter.get("/patients/:id", requireAuth, async (req: AuthedRequest, res) => {
@@ -57,7 +67,7 @@ patientsRouter.get("/patients/:id", requireAuth, async (req: AuthedRequest, res)
   res.json(patient);
 });
 
-// The trophy endpoint: Ana's private diagnosis lives here.
+// The trophy endpoint: Viktorija's private diagnosis lives here.
 patientsRouter.get("/patients/:id/visit-notes", requireAuth, async (req: AuthedRequest, res) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id)) {
@@ -70,6 +80,29 @@ patientsRouter.get("/patients/:id/visit-notes", requireAuth, async (req: AuthedR
   });
   res.json(notes);
 });
+
+// Nested resource: a single visit note under a patient.
+// ⚠️ SIN #4 (see the header): the note is fetched by its GLOBAL id; :patientId is
+// never used. Even with an ownership check on :patientId, your-own-parent +
+// someone-else's-noteId still reads their note. Fix = scope the child to the parent.
+patientsRouter.get(
+  "/patients/:patientId/visit-notes/:noteId",
+  requireAuth,
+  async (req: AuthedRequest, res) => {
+    const patientId = Number(req.params.patientId);
+    const noteId = Number(req.params.noteId);
+    if (!Number.isInteger(patientId) || !Number.isInteger(noteId)) {
+      res.status(400).json({ error: "Invalid id" });
+      return;
+    }
+    const note = await prisma.visitNote.findUnique({ where: { id: noteId } });
+    if (!note) {
+      res.status(404).json({ error: "Not found" });
+      return;
+    }
+    res.json(note);
+  },
+);
 
 patientsRouter.get("/patients/:id/appointments", requireAuth, async (req: AuthedRequest, res) => {
   const id = Number(req.params.id);

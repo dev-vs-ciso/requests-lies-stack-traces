@@ -15,7 +15,7 @@ import {
   usernameBase,
 } from "./data/names";
 import { DIAGNOSES, APPT_REASONS, PRESCRIPTIONS } from "./data/conditions";
-import { CAST, ANDREJ, VIKTORIJA, DR_STOJANOVSKA, VIKTORIJA_TROPHY, BULK_START_ID } from "./data/cast";
+import { CAST, ANDREJ, VIKTORIJA, DR_STOJANOVSKA, VIKTORIJA_TROPHY, ANDREJ_NOTE, BULK_START_ID } from "./data/cast";
 
 const PATIENT_COUNT = Number(process.env.PATIENT_COUNT ?? 10_000);
 const CHUNK = 5_000;
@@ -139,25 +139,33 @@ async function main() {
       });
     }
   }
-  // The trophy: Viktorija's private note. Andrej gets a guaranteed own note so the
-  // post-fix regression check ("can still read my own") has something to read.
-  notes.push({
-    patientId: VIKTORIJA.id,
-    providerId: PROVIDER_ID,
-    date: new Date("2025-12-15T10:30:00Z"),
-    diagnosis: VIKTORIJA_TROPHY.diagnosis,
-    notes: VIKTORIJA_TROPHY.notes,
-  });
-  notes.push({
-    patientId: ANDREJ.id,
-    providerId: PROVIDER_ID,
-    date: new Date("2025-11-20T14:00:00Z"),
-    diagnosis: "Mild-to-moderate inbox anxiety",
-    notes: "Patient advised to enable Do Not Disturb. Follow up in 3 months.",
-  });
   await chunkedCreate(notes, (batch) =>
     prisma.visitNote.createMany({ data: batch }),
   );
+
+  // The trophy (Viktorija) and Andrej's own note get FIXED ids, so the checker can
+  // target the nested /visit-notes/:noteId endpoint directly. Andrej's note also
+  // gives the post-fix regression check ("can still read my own") something to read.
+  await prisma.visitNote.create({
+    data: {
+      id: VIKTORIJA_TROPHY.id,
+      patientId: VIKTORIJA.id,
+      providerId: PROVIDER_ID,
+      date: new Date("2025-12-15T10:30:00Z"),
+      diagnosis: VIKTORIJA_TROPHY.diagnosis,
+      notes: VIKTORIJA_TROPHY.notes,
+    },
+  });
+  await prisma.visitNote.create({
+    data: {
+      id: ANDREJ_NOTE.id,
+      patientId: ANDREJ.id,
+      providerId: PROVIDER_ID,
+      date: new Date("2025-11-20T14:00:00Z"),
+      diagnosis: ANDREJ_NOTE.diagnosis,
+      notes: ANDREJ_NOTE.notes,
+    },
+  });
 
   // --- Prescriptions (0-2 per patient) ---
   console.log("Generating prescriptions...");

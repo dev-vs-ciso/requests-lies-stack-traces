@@ -6,6 +6,8 @@ import { authRouter } from "./routes/auth";
 import { profileRouter } from "./routes/profile";
 import { patientsRouter } from "./routes/patients";
 import { searchRouter } from "./routes/search";
+import { statusRouter } from "./routes/status";
+import { appointmentsRouter } from "./routes/appointments";
 
 export function createApp() {
   const app = express();
@@ -17,6 +19,10 @@ export function createApp() {
   app.use("/api", profileRouter);
   app.use("/api", patientsRouter);
   app.use("/api", searchRouter);
+  app.use("/api", appointmentsRouter);
+  app.use("/api", statusRouter);
+  // NOTE: X-Powered-By: Express is left ON (Express's default). Part of beat B — the
+  // fix adds app.disable("x-powered-by").
 
   // The decoy frontend: does everything right, so the bug is invisible here.
   const publicDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../public");

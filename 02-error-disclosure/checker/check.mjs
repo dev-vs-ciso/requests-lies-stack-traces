@@ -76,24 +76,58 @@ async function main() {
   });
   const goodOk = goodRes.ok && (await goodRes.text()).length > 2;
 
-  console.log(bold("Exploit — fingerprint the target from its errors alone"));
+  // Beat B — metadata disclosure via /api/status and the X-Powered-By header.
+  const statusRes = await fetch(`${BASE}/api/status`);
+  let statusBody = {};
+  try {
+    statusBody = await statusRes.json();
+  } catch {
+    /* not JSON */
+  }
+  const OVERSHARE_FIELDS = ["database", "node", "openssl", "platform", "env", "uptime"];
+  const leakedFields = OVERSHARE_FIELDS.filter((f) => f in statusBody);
+  const statusOvershares = statusRes.ok && leakedFields.length > 0;
+  const poweredBy = statusRes.headers.get("x-powered-by");
+
+  // Beat C — existence disclosure via 404-vs-403 on the item endpoint.
+  const existOther = await fetch(`${BASE}/api/appointments/90003`, { headers: { Cookie: cookie } }); // Viktorija's
+  const nonexist = await fetch(`${BASE}/api/appointments/99999999`, { headers: { Cookie: cookie } }); // no such id
+  const existenceLeak = existOther.status !== nonexist.status;
+  const ownApptRes = await fetch(`${BASE}/api/appointments/90004`, { headers: { Cookie: cookie } }); // Andrej's own
+  const ownApptOk = ownApptRes.ok;
+
+  console.log(bold("Beat 1 — verbose errors fingerprint the stack"));
   if (leaks.length) {
     console.log(dim(`      A malformed request returned an error that leaks:`));
     for (const [, desc] of leaks) line(false, desc);
-    console.log(dim(`      → still VULNERABLE. Errors must not reveal internals.`));
   } else {
     line(true, `A malformed request returns a clean, generic error (${badRes.status}).`);
   }
 
-  console.log(bold("\nRegression — valid requests still work"));
-  line(goodOk, goodOk ? "Sorting by a real field still returns data." : "A valid request no longer works (over-fixed).");
+  console.log(bold("\nBeat B — metadata / version disclosure"));
+  if (statusOvershares) line(false, `/api/status leaks: ${leakedFields.join(", ")}`);
+  else line(true, "/api/status returns a minimal response.");
+  if (poweredBy) line(false, `X-Powered-By header present ("${poweredBy}").`);
+  else line(true, "X-Powered-By header is gone.");
 
-  const fixed = leaks.length === 0 && goodOk;
+  console.log(bold("\nBeat C — existence disclosure (404 vs 403)"));
+  if (existenceLeak) {
+    line(false, `exists-but-forbidden (${existOther.status}) ≠ not-found (${nonexist.status}) — the status code confirms which ids are real.`);
+  } else {
+    line(true, `forbidden and not-found are indistinguishable (both ${existOther.status}).`);
+  }
+
+  console.log(bold("\nRegressions — legit requests still work"));
+  line(goodOk, goodOk ? "Sorting by a real field still returns data." : "A valid sort no longer works (over-fixed).");
+  line(ownApptOk, ownApptOk ? "Andrej can still read his own appointment." : "Andrej can NO LONGER read his own appointment (over-fixed).");
+
+  const fixed = leaks.length === 0 && !statusOvershares && !poweredBy && !existenceLeak && goodOk && ownApptOk;
+  const anyLeak = leaks.length > 0 || statusOvershares || !!poweredBy || existenceLeak;
   console.log("");
   if (fixed) {
-    console.log(green(bold("✅ PATCHED — errors no longer overshare, valid requests intact.")));
-  } else if (leaks.length) {
-    console.log(red(bold("❌ VULNERABLE — the error response fingerprints your stack.")));
+    console.log(green(bold("✅ PATCHED — nothing overshares; valid requests intact.")));
+  } else if (anyLeak) {
+    console.log(red(bold("❌ VULNERABLE — the app still overshares. See the ✗ items above.")));
   } else {
     console.log(red(bold("⚠️  PARTIAL — see the ✗ items above.")));
   }

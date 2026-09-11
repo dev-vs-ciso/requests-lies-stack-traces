@@ -118,6 +118,30 @@ async function main() {
     prisma.appointment.createMany({ data: batch }),
   );
 
+  // Fixed-id appointments so the checker can target the item endpoint (beat C)
+  // deterministically: one is Viktorija's (exists, not Andrej's → the existence
+  // probe), one is Andrej's own (the regression target).
+  await prisma.appointment.create({
+    data: {
+      id: 90003,
+      patientId: VIKTORIJA.id,
+      providerId: PROVIDER_ID,
+      scheduledAt: new Date("2026-03-01T09:00:00Z"),
+      reason: "Routine sarcasm level check",
+      status: "scheduled",
+    },
+  });
+  await prisma.appointment.create({
+    data: {
+      id: 90004,
+      patientId: ANDREJ.id,
+      providerId: PROVIDER_ID,
+      scheduledAt: new Date("2026-03-02T09:00:00Z"),
+      reason: "Annual eye-roll evaluation",
+      status: "scheduled",
+    },
+  });
+
   // --- Visit notes (0-2 per patient) ---
   console.log("Generating visit notes...");
   const notes: {

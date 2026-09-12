@@ -7,25 +7,30 @@ export const directoryRouter = Router();
 // GET /api/directory/appointments?limit=&offset=
 //
 // A clinic-wide appointments feed. Any logged-in user can page through EVERY
-// patient's appointments — offset/limit pagination, no rate limit.
+// patient's appointments.
 //
-// ⚠️ PLANTED SIN: offset pagination on a sensitive collection, with no throttle.
-// `?limit&offset` is the pattern every tutorial teaches, and it's completely fine
-// for, say, a public product catalogue. Here it turns the entire clinic into a
-// `for (offset = 0; ; offset += limit)` loop — a bulk-exfiltration endpoint you
-// built for the attacker. Offset lets them jump to any slice; no rate limit lets
-// them do it as fast as the network allows.
+// ⚠️ PLANTED SINS (module 3 hands-on lab):
 //
-// THE FIX (module 3 lab):
-//   1. Cursor pagination — `?cursor=<lastId>&limit=` instead of offset, so there's
-//      no cheap random access and pages must be walked in order.
-//   2. Rate limiting — cap requests per client so a scripted walk gets 429'd.
-//      (express-rate-limit is already in package.json, ready to wire up.)
-//   3. (Arguably the real fix: scope it. But the lab's named cures are the two
-//      above — apply them and watch the enumeration script die.)
+//   1. Offset pagination on a sensitive collection. `?limit&offset` is the pattern
+//      every tutorial teaches — fine for a public product catalogue, here it turns
+//      the whole clinic into a `for (offset = 0; ; offset += limit)` loop.
+//   2. No rate limit. The walk runs as fast as the network allows.
+//   3. No cap on page size (beat A). The client picks `limit`, so `?limit=100000`
+//      returns the ENTIRE table in ONE request — and a per-request rate limiter
+//      can't help, because it's a single request. Pagination without a max page
+//      size isn't pagination; it's an optional convenience the attacker declines.
+//
+// THE FIX:
+//   - Cursor pagination (`?cursor=<lastId>&limit=`) instead of offset — no cheap
+//     random access; pages must be walked in order.
+//   - Rate limiting (express-rate-limit is installed) so a scripted walk gets 429'd.
+//   - A hard maximum on `limit` (e.g. Math.min(limit, 100)) so one request can't
+//     drain the table.
+//   (The deeper fix is to scope/authorize the feed; the lab's named cures are above.)
 directoryRouter.get("/directory/appointments", requireAuth, async (_req: AuthedRequest, res) => {
   const rawLimit = Number(_req.query.limit);
-  const limit = Number.isFinite(rawLimit) ? Math.min(Math.max(rawLimit, 1), 50) : 20;
+  // No cap — whatever the client asks for (beat A).
+  const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.floor(rawLimit) : 20;
   const rawOffset = Number(_req.query.offset);
   const offset = Number.isFinite(rawOffset) && rawOffset > 0 ? Math.floor(rawOffset) : 0;
 
@@ -47,4 +52,30 @@ directoryRouter.get("/directory/appointments", requireAuth, async (_req: AuthedR
       status: a.status,
     })),
   });
+});
+
+// GET /api/directory/patients?limit=&offset=
+//
+// The same enumeration bug, pointed at a juicier target (beat B — the demo). Any
+// logged-in patient can page the ENTIRE patient roster — names, usernames, dates of
+// birth — the raw PII, not just appointment reasons. Same three sins as above
+// (offset, no throttle, no cap). This is the "scale IS the vulnerability" beat: one
+// scripted walk exfiltrates every identity the clinic holds.
+//
+// (Shown as a demo; the fix is identical to the appointments feed — and, really,
+// this feed should be scoped to staff, not exposed to every patient at all.)
+directoryRouter.get("/directory/patients", requireAuth, async (_req: AuthedRequest, res) => {
+  const rawLimit = Number(_req.query.limit);
+  const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.floor(rawLimit) : 20;
+  const rawOffset = Number(_req.query.offset);
+  const offset = Number.isFinite(rawOffset) && rawOffset > 0 ? Math.floor(rawOffset) : 0;
+
+  const rows = await prisma.patient.findMany({
+    skip: offset,
+    take: limit,
+    orderBy: { id: "asc" },
+    select: { id: true, username: true, displayName: true, dateOfBirth: true, role: true },
+  });
+
+  res.json({ limit, offset, items: rows });
 });

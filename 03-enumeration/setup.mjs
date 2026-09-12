@@ -92,6 +92,9 @@ const actions = {
   async "9"() {
     run("docker compose ps");
   },
+  async d() {
+    run("node checker/check-roster.mjs");
+  },
 };
 
 function menu() {
@@ -105,6 +108,7 @@ function menu() {
   console.log(`  ${green(bold("7"))}  Check my work    ${dim("(run the exploit/fix verifier)")}`);
   console.log(`  ${bold("8")}  Logs`);
   console.log(`  ${bold("9")}  Status`);
+  console.log(`  ${bold("d")}  Demo: roster    ${dim("(beat B — dump the patient roster)")}`);
   console.log(`  ${bold("0")}  Exit`);
 }
 
@@ -118,7 +122,7 @@ async function main() {
     menu();
     const choice = (await rl.question(bold("\nChoose: "))).trim();
     if (choice === "0") break;
-    const action = actions[choice];
+    const action = actions[choice] ?? actions[choice.toLowerCase()];
     if (action) {
       await action();
     } else {

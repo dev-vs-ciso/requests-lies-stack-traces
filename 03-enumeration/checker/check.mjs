@@ -67,7 +67,13 @@ async function main() {
   const offsetJumps = (p0.items?.[0]?.id ?? -1) !== (p1.items?.[0]?.id ?? -1);
   const enumerationWorks = r0.ok && (p0.items?.length ?? 0) > 0 && offsetJumps && others.size > 0;
 
-  // 2) Rate-limit burst: fire BURST requests at once, count throttled ones.
+  // 2) Unbounded page size (beat A): ask for an absurd limit; a capped endpoint
+  //    ignores it. Run this BEFORE the burst so a rate limiter doesn't interfere.
+  const bigRes = await get(`/api/directory/appointments?limit=100000&offset=0`, cookie);
+  const bigItems = bigRes.ok ? ((await bigRes.json()).items ?? []).length : 0;
+  const uncapped = bigItems > 200;
+
+  // 3) Rate-limit burst: fire BURST requests at once, count throttled ones.
   const results = await Promise.all(
     Array.from({ length: BURST }, () => get(`/api/directory/appointments?limit=5&offset=0`, cookie)),
   );
@@ -81,6 +87,14 @@ async function main() {
     line(true, `Cross-patient offset enumeration no longer works.`);
   }
 
+  console.log(bold("\nPage size — is there a cap?"));
+  if (uncapped) {
+    line(false, `?limit=100000 returned ${bigItems} rows in a single request — no cap.`);
+    console.log(dim(`      → a per-request rate limit can't help; cap the page size.`));
+  } else {
+    line(true, `An oversized ?limit is capped (${bigItems} rows returned).`);
+  }
+
   console.log(bold("\nThrottle — a scripted burst"));
   if (throttled > 0) {
     line(true, `${throttled}/${BURST} requests got 429'd — the walk dies.`);
@@ -89,15 +103,15 @@ async function main() {
     console.log(dim(`      → still VULNERABLE. Add cursor pagination + rate limiting.`));
   }
 
-  const fixed = throttled > 0 && !enumerationWorks;
-  const vulnerable = enumerationWorks && throttled === 0;
+  const fixed = throttled > 0 && !enumerationWorks && !uncapped;
+  const vulnerable = uncapped || (enumerationWorks && throttled === 0);
   console.log("");
   if (fixed) {
-    console.log(green(bold("✅ PATCHED — cross-patient enumeration closed and bursts are throttled.")));
+    console.log(green(bold("✅ PATCHED — enumeration closed, page size capped, bursts throttled.")));
   } else if (vulnerable) {
-    console.log(red(bold("❌ VULNERABLE — unthrottled offset enumeration over everyone's data.")));
+    console.log(red(bold("❌ VULNERABLE — the feed can still be drained. See the ✗ items above.")));
   } else {
-    console.log(red(bold("⚠️  PARTIAL — see the ✗ items above (need cursor pagination AND rate limiting).")));
+    console.log(red(bold("⚠️  PARTIAL — see the ✗ items above (cursor pagination + rate limit + page cap).")));
   }
   console.log("");
   await finish(fixed ? 0 : 1);

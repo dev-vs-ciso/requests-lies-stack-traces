@@ -20,13 +20,8 @@ export interface AuthedRequest extends Request {
   auth?: { patientId: number; role: string; displayName: string };
 }
 
-// Resolve the session token from the cookie OR the ?session= query param.
-//
-// ⚠️ PLANTED SIN #1 (tokens in query strings): we accept the session token in the
-// query string "so kiosk check-in links and shared appointment links just work"
-// — a real magic-link / QR pattern that's perfectly sensible for a kiosk flow.
-// Here it's catastrophic: the token now leaks into server logs, browser history,
-// analytics, and Referer headers. Query wins over cookie, which only makes it worse.
+// Resolve the session token. Also accepts it as ?session= so shareable links and
+// kiosk check-in work without a cookie.
 function readToken(req: Request): string | undefined {
   const fromQuery =
     typeof req.query.session === "string" ? req.query.session : undefined;
@@ -34,10 +29,7 @@ function readToken(req: Request): string | undefined {
   return fromQuery ?? fromCookie;
 }
 
-// Authentication: are you logged in at all? (This part is correct.)
-// Note what's MISSING here — any check that the record you're asking for is yours.
-// That ownership check is the job of each route, and it was never written. See
-// src/routes/patients.ts.
+// Require a logged-in session; attaches req.auth for handlers.
 export async function requireAuth(
   req: AuthedRequest,
   res: Response,

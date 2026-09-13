@@ -1,10 +1,10 @@
-// Module 5 checker — the capstone scoreboard. It probes the "agent-built" API for
-// each planted vulnerability and prints which are still OPEN. It's both your hunt
-// guide and your fix verifier. Usage: node checker/check.mjs
+// Module 5 checker — the capstone scoreboard. Probes the "agent-built" API for each
+// planted vulnerability (synthesised from Modules 1–3) and prints which are still
+// OPEN. Both hunt guide and fix verifier. Usage: node checker/check.mjs
 
 const BASE = process.env.BASE ?? "http://localhost:3005";
 const ATTACKER = { username: "andrej", password: "andrej12345" };
-const BURST = 30;
+const TROPHY = "Advanced competitive napping"; // Viktorija's note (id 90002)
 
 const green = (s) => `\x1b[32m${s}\x1b[0m`;
 const red = (s) => `\x1b[31m${s}\x1b[0m`;
@@ -28,9 +28,7 @@ async function login() {
     body: JSON.stringify(ATTACKER),
   });
   if (!res.ok) throw new Error(`login failed (${res.status})`);
-  const sid = (res.headers.getSetCookie?.() ?? [])
-    .map((c) => c.split(";")[0])
-    .find((c) => c.startsWith("sid="));
+  const sid = (res.headers.getSetCookie?.() ?? []).map((c) => c.split(";")[0]).find((c) => c.startsWith("sid="));
   return { cookie: sid, token: sid?.slice("sid=".length) };
 }
 
@@ -51,42 +49,54 @@ async function main() {
   }
   const { cookie, token } = session;
 
-  // 1) IDOR — read Viktorija's (id 2) private notes as Andrej.
-  const idorBody = await get(`/api/patients/2/visit-notes`, cookie).then((r) => (r.ok ? r.text() : ""));
-  const idorOpen = idorBody.includes("Advanced competitive napping");
+  // 1) IDOR — read Viktorija's (id 2) private notes.
+  const idorOpen = (await get(`/api/patients/2/visit-notes`, cookie).then((r) => (r.ok ? r.text() : ""))).includes(TROPHY);
 
-  // 2) Session token in the query string.
+  // 2) Nested BOLA — your own parent id + Viktorija's noteId (90002).
+  const nestedOpen = (await get(`/api/patients/1/visit-notes/90002`, cookie).then((r) => (r.ok ? r.text() : ""))).includes(TROPHY);
+
+  // 3) Session token in the query string.
   const qsOpen = (await get(`/api/profile?session=${token}`, null)).ok;
 
-  // 3) Error disclosure — arbitrary sort leaks internals.
+  // 4) Verbose error disclosure — arbitrary sort leaks internals.
   const errBody = await get(`/api/appointments?sort=__nope__`, cookie).then((r) => r.text());
-  const errOpen = ["prisma", "unknown argument", "/app/", "\n    at "].some((m) =>
-    errBody.toLowerCase().includes(m),
-  );
+  const errOpen = ["prisma", "unknown argument", "/app/", "\n    at ", "node_modules"].some((m) => errBody.toLowerCase().includes(m));
 
-  // 4) Enumeration — cross-patient offset feed with no rate limit.
-  const feed = await get(`/api/directory/appointments?limit=5&offset=200`, cookie);
-  let enumOpen = false;
-  if (feed.ok) {
-    const items = (await feed.json()).items ?? [];
-    const others = items.some((i) => i.patientName && i.patientName !== "Андреј Аврамчевски");
-    const burst = await Promise.all(
-      Array.from({ length: BURST }, () => get(`/api/directory/appointments?limit=5`, cookie)),
-    );
-    const throttled = burst.filter((r) => r.status === 429).length;
-    enumOpen = others && throttled === 0;
+  // 5) Metadata disclosure — /api/status + X-Powered-By.
+  const statusRes = await get(`/api/status`, cookie);
+  let statusBody = {};
+  try {
+    statusBody = await statusRes.json();
+  } catch {
+    /* not json */
   }
+  const metaOpen =
+    ["database", "node", "openssl", "platform", "env", "uptime"].some((f) => f in statusBody) ||
+    statusRes.headers.get("x-powered-by") != null;
 
-  // 5) Wildcard CORS.
+  // 6) Existence disclosure — 404 (missing) vs 403 (exists, not yours).
+  const existOther = await get(`/api/appointments/90003`, cookie); // Viktorija's
+  const nonexist = await get(`/api/appointments/99999999`, cookie);
+  const existenceOpen = existOther.status !== nonexist.status;
+
+  // 7) Enumeration / unbounded page size — one request drains the feed.
+  const feed = await get(`/api/directory/appointments?limit=100000&offset=0`, cookie);
+  const feedCount = feed.ok ? ((await feed.json()).items ?? []).length : 0;
+  const enumOpen = feedCount > 200;
+
+  // 8) Wildcard CORS.
   const cors = await fetch(`${BASE}/api/health`, { headers: { Origin: "https://evil.example" } });
   const acao = cors.headers.get("access-control-allow-origin");
   const corsOpen = acao === "*" || acao === "https://evil.example";
 
   const findings = [
     ["IDOR — cross-patient record access", idorOpen],
+    ["Nested BOLA — child not scoped to its parent", nestedOpen],
     ["Session token accepted in the query string", qsOpen],
     ["Verbose errors leak ORM / schema / paths", errOpen],
-    ["Unthrottled offset enumeration of everyone's data", enumOpen],
+    ["Metadata disclosure (/api/status, X-Powered-By)", metaOpen],
+    ["Existence disclosure (404 vs 403)", existenceOpen],
+    ["Unbounded / unthrottled enumeration feed", enumOpen],
     ["Wildcard CORS reflects any origin with credentials", corsOpen],
   ];
 
@@ -101,7 +111,7 @@ async function main() {
     console.log(green(bold("✅ ALL CLEAR — every planted vulnerability is closed.")));
   } else {
     console.log(red(bold(`❌ ${openCount}/${findings.length} still OPEN — keep hunting.`)));
-    console.log(dim(`   Tip: the tests are green the whole time. That's the lesson.`));
+    console.log(dim(`   Tip: the tests (npm test) are green the whole time. That's the lesson.`));
   }
   console.log("");
   await finish(openCount === 0 ? 0 : 1);

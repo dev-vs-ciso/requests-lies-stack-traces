@@ -50,11 +50,24 @@ export const CAST: readonly CastMember[] = [ANDREJ, VIKTORIJA, DR_STOJANOVSKA];
 
 // The trophy: Viktorija's private diagnosis. The IDOR lab succeeds when Andrej can
 // read this string through the API. The checker greps for exactly this.
+//
+// Fixed visit-note ids (well above the bulk note range) so the checker can target
+// the nested /visit-notes/:noteId endpoint directly — no discovery needed once the
+// list endpoint is locked down.
 export const VIKTORIJA_TROPHY = {
+  id: 90002,
   diagnosis: "Advanced competitive napping (Stage IV, championship-level)",
   notes:
     "Patient reports napping through three consecutive all-hands meetings. " +
     "Recommend continued rest and a more comfortable chair. Do NOT tell HR.",
+} as const;
+
+// Andrej's own note — the regression target (he must still be able to read this
+// through the nested endpoint after the fix).
+export const ANDREJ_NOTE = {
+  id: 90001,
+  diagnosis: "Mild-to-moderate inbox anxiety",
+  notes: "Patient advised to enable Do Not Disturb. Follow up in 3 months.",
 } as const;
 
 // The lowest bulk-patient id. Cast occupy 1..3; bulk start here.

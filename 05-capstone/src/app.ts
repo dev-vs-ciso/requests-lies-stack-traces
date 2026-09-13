@@ -6,14 +6,16 @@ import { authRouter } from "./routes/auth";
 import { profileRouter } from "./routes/profile";
 import { patientsRouter } from "./routes/patients";
 import { searchRouter } from "./routes/search";
+import { appointmentsRouter } from "./routes/appointments";
+import { statusRouter } from "./routes/status";
 import { directoryRouter } from "./routes/directory";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// This is the "agent-built" API for the capstone hunt. It was assembled fast, the
-// happy path works, and the test suite (npm test) is green. It also contains a
-// stack of the exact bugs an agent tends to emit. Nothing here is labelled with a
-// ⚠️ SIN comment on purpose — finding them is the exercise. The checker
-// (checker/check.mjs) is your scoreboard.
+// The "agent-built" API for the capstone hunt. It was assembled fast, the happy
+// path works, and the test suite (npm test) is green. It also stacks the exact bugs
+// from Modules 1–3 that agents tend to emit. Nothing here is labelled with a ⚠️ SIN
+// comment on purpose — finding them is the exercise. The scoreboard checker
+// (checker/check.mjs) tells you how many are left.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function createApp() {
@@ -39,6 +41,8 @@ export function createApp() {
   app.use("/api", profileRouter);
   app.use("/api", patientsRouter);
   app.use("/api", searchRouter);
+  app.use("/api", appointmentsRouter);
+  app.use("/api", statusRouter);
   app.use("/api", directoryRouter);
 
   const publicDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../public");

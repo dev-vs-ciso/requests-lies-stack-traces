@@ -46,3 +46,14 @@ test("a patient can list their own appointments", async () => {
   const r = await fetch(`${BASE}/api/patients/1/appointments`, { headers: { Cookie: cookie } });
   assert.equal(r.status, 200);
 });
+
+test("the appointments feed returns a page", async () => {
+  const r = await fetch(`${BASE}/api/directory/appointments`, { headers: { Cookie: cookie } });
+  assert.equal(r.status, 200);
+  assert.ok(Array.isArray((await r.json()).items));
+});
+
+test("a patient can open one of their appointments", async () => {
+  const r = await fetch(`${BASE}/api/appointments/90004`, { headers: { Cookie: cookie } });
+  assert.equal(r.status, 200);
+});

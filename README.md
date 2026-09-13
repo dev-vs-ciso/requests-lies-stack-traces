@@ -32,6 +32,14 @@ Please arrive with all of this working:
    git clone https://github.com/dev-vs-ciso/requests-lies-stack-traces.git
    cd requests-lies-stack-traces
    ```
+7. **Pre-build the images (recommended).** The first build of each module pulls the
+   base image, installs deps, and seeds the data — a few minutes *once per module*.
+   Do it ahead of time so every in-lab **Start** is instant:
+   ```bash
+   npm run build-all
+   ```
+   This only builds; it starts nothing. (Reseeding and restarting during a lab are
+   always instant — the data is baked into the image, not regenerated.)
 
 ### Confirm you're ready (2 minutes)
 

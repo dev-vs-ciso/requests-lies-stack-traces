@@ -13,11 +13,21 @@
       a few days out. The single biggest time sink is people installing Docker in
       the room. Make "Docker Desktop running + `node setup.mjs` shows the portal"
       a pre-req, not a lab.
-- [ ] **Pre-pull the base image on the room's network.** `docker pull
-      node:24-bookworm-slim` on a few laptops first — the first build of Module 1
-      downloads the base image and Prisma engines. On slow conference wifi this is
-      the difference between a 2-minute and a 15-minute first build. Consider a
-      USB stick or local registry as backup.
+- [ ] **Pre-build the images — do NOT build in the room.** Data generation is baked
+      into each image at build time (once per module); reseed/restart in-lab are then
+      instant. But that first build per module is minutes of base-image pull + npm
+      install + Prisma engines — 5 modules × 20 laptops on conference wifi is the
+      classic disaster. Have everyone run this ahead of time (setup window or the
+      night before):
+      ```bash
+      npm run build-all      # builds all module images, starts nothing
+      ```
+      **Most reliable for a big room:** build once, ship the images on a USB stick /
+      shared drive so nobody builds or downloads anything:
+      ```bash
+      npm run save-images    # → dist/rlst-images.tar   (you, once)
+      npm run load-images    # attendees, from the stick
+      ```
 - [ ] **Both hosts do a full dry run** of every module the night before, on the
       actual laptops you'll demo from. Confirm the checker goes red→green.
 - [ ] **Know the reset buttons cold** (see the cheat-sheet at the bottom). When a

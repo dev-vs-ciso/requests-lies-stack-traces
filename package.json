@@ -5,6 +5,9 @@
   "description": "Workshop launcher — pick a lab, then use that lab's menu.",
   "scripts": {
     "start": "node setup.mjs",
+    "build-all": "node scripts/build-all.mjs",
+    "save-images": "node scripts/save-images.mjs",
+    "load-images": "node scripts/load-images.mjs",
     "smoke": "node scripts/smoke-test.mjs"
   }
 }

@@ -10,7 +10,7 @@ This app was assembled fast and it *looks* done. Prove it to yourself:
 
 ```bash
 node setup.mjs        # 1) Start
-npm test              # with the app up — every test passes ✅
+npm test              # with the app up — every test passes ✅  (or: setup → t)
 ```
 
 Seven green tests. Ship it, right?

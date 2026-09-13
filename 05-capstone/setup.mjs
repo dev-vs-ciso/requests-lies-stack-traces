@@ -86,6 +86,10 @@ const actions = {
   async "7"() {
     run("node checker/check.mjs");
   },
+  async t() {
+    console.log(dim("Running the agent's test suite (needs the app up)..."));
+    run("node --test");
+  },
   async "8"() {
     run("docker compose logs --tail=60 portal");
   },
@@ -102,7 +106,8 @@ function menu() {
   console.log(`  ${bold("4")}  Reseed data      ${dim("(fresh data, no rebuild — fast)")}`);
   console.log(`  ${bold("5")}  Nuke & repave    ${dim("(the panic button)")}`);
   console.log(`  ${bold("6")}  Reset the fix    ${dim("(git restore src/)")}`);
-  console.log(`  ${green(bold("7"))}  Check my work    ${dim("(run the exploit/fix verifier)")}`);
+  console.log(`  ${green(bold("7"))}  Check my work    ${dim("(the scoreboard — OPEN/CLOSED per vuln)")}`);
+  console.log(`  ${bold("t")}  Run tests        ${dim("(the agent's suite — stays green either way)")}`);
   console.log(`  ${bold("8")}  Logs`);
   console.log(`  ${bold("9")}  Status`);
   console.log(`  ${bold("0")}  Exit`);
@@ -118,7 +123,7 @@ async function main() {
     menu();
     const choice = (await rl.question(bold("\nChoose: "))).trim();
     if (choice === "0") break;
-    const action = actions[choice];
+    const action = actions[choice] ?? actions[choice.toLowerCase()];
     if (action) {
       await action();
     } else {

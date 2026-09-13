@@ -8,6 +8,7 @@
 // Requires Docker running. Safe to re-run; each module is torn down (down -v) after.
 
 import { spawnSync } from "node:child_process";
+import { readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -79,6 +80,19 @@ async function main() {
     console.log(dim("running checker (a fresh app should be VULNERABLE) ..."));
     const code = sh("node checker/check.mjs", cwd);
     results.push([m.dir, code === 1 ? green("OK (VULNERABLE, as expected)") : code === 0 ? green("OK (already patched)") : red(`checker error (exit ${code})`)]);
+
+    // Also run any standalone demo checkers (check-*.mjs), e.g. roster / SSRF.
+    let demos = [];
+    try {
+      demos = readdirSync(path.join(cwd, "checker")).filter((f) => /^check-.+\.mjs$/.test(f));
+    } catch {
+      /* no checker dir */
+    }
+    for (const demo of demos) {
+      console.log(dim(`running demo checker ${demo} ...`));
+      const dcode = sh(`node checker/${demo}`, cwd);
+      results.push([`${m.dir} · ${demo}`, dcode === 1 ? green("OK (VULNERABLE, as expected)") : dcode === 0 ? green("OK (already patched)") : red(`error (exit ${dcode})`)]);
+    }
 
     console.log(dim("tearing down ..."));
     sh("docker compose down -v", cwd);

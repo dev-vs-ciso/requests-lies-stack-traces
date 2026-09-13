@@ -50,7 +50,8 @@ function credentials() {
   console.log(`  Labs (pretend internal):  ${cyan(LABS)}`);
   console.log(`  Log in as:  ${bold("andrej / andrej12345")}`);
   console.log(dim(`  Victim: Викторија Врангаловска — patient ${bold("id 2")} (her lab results are the trophy)`));
-  console.log(dim(`  Try:  curl -H "X-Internal-Request: true" "${LABS}/lab-results?patientId=2"\n`));
+  console.log(dim(`  Zombie v1:  curl -H "X-Internal-Request: true" "${LABS}/api/v1/lab-results?patientId=2"`));
+  console.log(dim(`  SSRF demo:  menu option ${bold("d")}  (reach the internal-only integrations service)\n`));
 }
 
 const actions = {
@@ -81,8 +82,8 @@ const actions = {
     }
   },
   async "6"() {
-    console.log(dim("Restoring portal/ and labs/ source to the original (vulnerable) state..."));
-    run("git restore --source=HEAD --worktree -- portal/src labs/src");
+    console.log(dim("Restoring portal/, labs/ and integrations/ source to the original (vulnerable) state..."));
+    run("git restore --source=HEAD --worktree -- portal/src labs/src integrations/src");
     console.log(green("Done. nodemon will reload; if not, use option 3 (Restart)."));
   },
   async "7"() {
@@ -93,6 +94,9 @@ const actions = {
   },
   async "9"() {
     run("docker compose ps");
+  },
+  async d() {
+    run("node checker/check-ssrf.mjs");
   },
 };
 
@@ -107,6 +111,7 @@ function menu() {
   console.log(`  ${green(bold("7"))}  Check my work    ${dim("(run the exploit/fix verifier)")}`);
   console.log(`  ${bold("8")}  Logs`);
   console.log(`  ${bold("9")}  Status`);
+  console.log(`  ${bold("d")}  Demo: SSRF      ${dim("(beat S — reach the internal integrations service)")}`);
   console.log(`  ${bold("0")}  Exit`);
 }
 
@@ -120,7 +125,7 @@ async function main() {
     menu();
     const choice = (await rl.question(bold("\nChoose: "))).trim();
     if (choice === "0") break;
-    const action = actions[choice];
+    const action = actions[choice] ?? actions[choice.toLowerCase()];
     if (action) {
       await action();
     } else {

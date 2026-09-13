@@ -16,12 +16,27 @@ services:
     command: ["npx", "nodemon", "--legacy-watch", "--watch", "src", "--ext", "ts,js", "--exec", "tsx src/server.ts"]
     restart: unless-stopped
 
+  integrations:
+    build: ./integrations
+    image: rlst-m4-integrations
+    container_name: rlst-m4-integrations
+    # NO `ports:` — internal-only. Reachable from other services on the compose
+    # network (http://integrations:3000), never from the host. The SSRF beat is the
+    # only way in from outside.
+    environment:
+      PORT: "3000"
+    volumes:
+      - ./integrations/src:/app/src
+    command: ["npx", "nodemon", "--legacy-watch", "--watch", "src", "--ext", "ts,js", "--exec", "tsx src/server.ts"]
+    restart: unless-stopped
+
   portal:
     build: ./portal
     image: rlst-m4-portal
     container_name: rlst-m4-portal
     depends_on:
       - labs
+      - integrations
     ports:
       - "3004:3000"
     environment:
